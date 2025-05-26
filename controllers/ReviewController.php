@@ -26,12 +26,6 @@ class ReviewController extends Controller {
         
         $reviewModel = new Review();
         
-        // Перевіряємо чи може користувач залишити відгук
-        if (!$reviewModel->canUserReview($_SESSION['user_id'], $productId)) {
-            $_SESSION['error'] = 'Ви можете залишити відгук тільки на товари, які купували';
-            $this->redirect('/product/' . $productId);
-        }
-        
         $result = $reviewModel->addReview($_SESSION['user_id'], $productId, $rating, $comment);
         
         if ($result) {
@@ -86,21 +80,25 @@ class ReviewController extends Controller {
         $this->redirect('/product/' . $review['product_id']);
     }
     
+    // ✅ ОНОВЛЕНО: Додано можливість видалення для адміністратора
     public function delete() {
         $this->requireAuth();
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/');
+            $this->json(['success' => false, 'message' => 'Невірний метод запиту']);
+            return;
         }
         
         if (!$this->validateCsrfToken($_POST['csrf_token'] ?? '')) {
             $this->json(['success' => false, 'message' => 'Невірний токен безпеки']);
+            return;
         }
         
         $reviewId = (int)($_POST['review_id'] ?? 0);
         
         if ($reviewId <= 0) {
             $this->json(['success' => false, 'message' => 'Невірні дані']);
+            return;
         }
         
         $reviewModel = new Review();
@@ -108,11 +106,16 @@ class ReviewController extends Controller {
         
         if (!$review) {
             $this->json(['success' => false, 'message' => 'Відгук не знайдено']);
+            return;
         }
         
-        // Перевіряємо права (власник відгуку або адмін)
-        if ($review['user_id'] != $_SESSION['user_id'] && $_SESSION['user_role'] !== 'admin') {
+        // ✅ ЗМІНЕНО: Перевіряємо права (власник відгуку або адмін)
+        $isOwner = $review['user_id'] == $_SESSION['user_id'];
+        $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        
+        if (!$isOwner && !$isAdmin) {
             $this->json(['success' => false, 'message' => 'Немає прав для видалення']);
+            return;
         }
         
         $result = $reviewModel->delete($reviewId);
@@ -122,6 +125,39 @@ class ReviewController extends Controller {
         } else {
             $this->json(['success' => false, 'message' => 'Помилка при видаленні']);
         }
+    }
+    
+    // ✅ ДОДАНО: Метод для адміністрування відгуків
+    public function adminIndex() {
+        $this->requireAdmin();
+        
+        $reviewModel = new Review();
+        
+        // Параметри пагінації та фільтрації
+        $page = (int)($_GET['page'] ?? 1);
+        $limit = 20;
+        $offset = ($page - 1) * $limit;
+        $search = $this->clean($_GET['search'] ?? '');
+        $productId = (int)($_GET['product_id'] ?? 0);
+        $rating = (int)($_GET['rating'] ?? 0);
+        
+        // Отримуємо відгуки з фільтрацією
+        $reviews = $reviewModel->getReviewsForAdmin($limit, $offset, $search, $productId, $rating);
+        $totalReviews = $reviewModel->countReviewsForAdmin($search, $productId, $rating);
+        $totalPages = ceil($totalReviews / $limit);
+        
+        $data = [
+            'title' => 'Управління відгуками',
+            'reviews' => $reviews,
+            'search' => $search,
+            'selectedProduct' => $productId,
+            'selectedRating' => $rating,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'csrf_token' => $this->generateCsrfToken()
+        ];
+        
+        $this->viewAdmin('reviews/index', $data);
     }
 }
 ?>

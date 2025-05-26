@@ -445,6 +445,7 @@
     border-radius: 0.5rem;
     margin-bottom: 1rem;
     padding: 1.5rem;
+    position: relative;
 }
 
 .review-header {
@@ -460,6 +461,25 @@
     color: #2d3748;
 }
 
+.reviewer-name-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.verified-purchase-badge {
+    background: #198754;
+    color: white;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
 .review-rating {
     color: #ffc107;
 }
@@ -473,6 +493,58 @@
     color: #4a5568;
     line-height: 1.6;
     margin: 0;
+}
+
+/* ✅ ДОДАНО: Стилі для кнопок управління відгуками */
+.review-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.review-action-btn {
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-right: 100px;
+}
+
+.review-action-btn.delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.review-action-btn.delete:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.review-action-btn.edit {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.review-action-btn.edit:hover {
+    background: #0d6efd;
+    color: white;
+}
+
+.admin-badge {
+    background: #6f42c1;
+    color: white;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
 }
 
 .no-reviews {
@@ -618,6 +690,41 @@
     margin-left: 1rem;
 }
 
+.login-prompt {
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-prompt h5 {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.login-prompt p {
+    color: #718096;
+    margin-bottom: 1rem;
+}
+
+.login-btn {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background: #0b5ed7;
+    color: white;
+}
+
 @media (max-width: 768px) {
     .product-title {
         font-size: 1.5rem;
@@ -639,6 +746,12 @@
     
     .related-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .review-actions {
+        position: static;
+        margin-top: 1rem;
+        justify-content: flex-end;
     }
 }
 
@@ -842,7 +955,17 @@
                 <?php if (isset($_SESSION['user_id']) && $canReview): ?>
                 <div class="review-form-card">
                     <div class="review-form-header">
-                        <h5>Залишити відгук</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>
+                                <i class="fas fa-star me-2"></i>
+                                <?= $userReview ? 'Редагувати відгук' : 'Залишити відгук' ?>
+                            </h5>
+                            <?php if ($hasPurchased): ?>
+                                <span class="verified-purchase-badge">
+                                    <i class="fas fa-check"></i>Підтверджена покупка
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                     <div class="review-form-body">
                         <form method="POST" action="<?= url('review/add') ?>">
@@ -853,7 +976,8 @@
                                 <label class="comment-label">Оцінка:</label>
                                 <div class="rating-input">
                                     <?php for ($i = 5; $i >= 1; $i--): ?>
-                                    <input type="radio" name="rating" value="<?= $i ?>" id="star<?= $i ?>" <?= $userReview && $userReview['rating'] == $i ? 'checked' : '' ?>>
+                                    <input type="radio" name="rating" value="<?= $i ?>" id="star<?= $i ?>" 
+                                           <?= $userReview && $userReview['rating'] == $i ? 'checked' : '' ?> required>
                                     <label for="star<?= $i ?>"><i class="fas fa-star"></i></label>
                                     <?php endfor; ?>
                                 </div>
@@ -861,25 +985,69 @@
                             
                             <div class="comment-group">
                                 <label for="comment" class="comment-label">Коментар:</label>
-                                <textarea class="comment-textarea" id="comment" name="comment" rows="3"><?= $userReview ? htmlspecialchars($userReview['comment']) : '' ?></textarea>
+                                <textarea class="comment-textarea" id="comment" name="comment" rows="3" 
+                                          placeholder="Поділіться своїми враженнями про товар..."><?= $userReview ? htmlspecialchars($userReview['comment']) : '' ?></textarea>
                             </div>
                             
                             <button type="submit" class="submit-review-btn">
+                                <i class="fas fa-<?= $userReview ? 'edit' : 'plus' ?> me-1"></i>
                                 <?= $userReview ? 'Оновити відгук' : 'Додати відгук' ?>
                             </button>
                         </form>
                     </div>
+                </div>
+                <?php elseif (!isset($_SESSION['user_id'])): ?>
+                <!-- Login Prompt -->
+                <div class="login-prompt">
+                    <h5><i class="fas fa-user-lock me-2"></i>Увійдіть, щоб залишити відгук</h5>
+                    <p>Щоб залишити відгук про цей товар, вам потрібно увійти в свій акаунт</p>
+                    <a href="<?= url('login') ?>" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-1"></i>Увійти
+                    </a>
                 </div>
                 <?php endif; ?>
 
                 <!-- Reviews List -->
                 <?php if (!empty($reviews)): ?>
                 <div class="reviews-list">
-                    <?php foreach ($reviews as $review): ?>
-                    <div class="review-card">
+                    <?php 
+                    $reviewModel = new Review(); // Створюємо екземпляр для перевірки покупок
+                    foreach ($reviews as $review): 
+                        $reviewerPurchased = $reviewModel->hasUserPurchased($review['user_id'], $product['id']);
+                        
+                        // ✅ ДОДАНО: Перевіряємо права на видалення
+                        $canDelete = false;
+                        if (isset($_SESSION['user_id'])) {
+                            $isOwner = $review['user_id'] == $_SESSION['user_id'];
+                            $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+                            $canDelete = $isOwner || $isAdmin;
+                        }
+                    ?>
+                    <div class="review-card" id="review-<?= $review['id'] ?>">
+                        <!-- ✅ ДОДАНО: Кнопки управління відгуками -->
+                        <?php if ($canDelete): ?>
+                        <div class="review-actions">
+                            <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                                <span class="admin-badge">
+                                    <i class="fas fa-shield-alt"></i> Адмін
+                                </span>
+                            <?php endif; ?>
+                            <button class="review-action-btn delete" onclick="deleteReview(<?= $review['id'] ?>)" title="Видалити відгук">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <?php endif; ?>
+                        
                         <div class="review-header">
                             <div class="reviewer-info">
-                                <h6><?= htmlspecialchars($review['first_name'] . ' ' . $review['last_name']) ?></h6>
+                                <div class="reviewer-name-container">
+                                    <h6><?= htmlspecialchars($review['first_name'] . ' ' . $review['last_name']) ?></h6>
+                                    <?php if ($reviewerPurchased): ?>
+                                        <span class="verified-purchase-badge">
+                                            <i class="fas fa-check"></i>Підтверджена покупка
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="review-rating">
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
                                         <i class="fas fa-star<?= $i <= $review['rating'] ? '' : '-o' ?>"></i>
@@ -993,6 +1161,45 @@ function addToCart(productId) {
     });
 }
 
+// ✅ ДОДАНО: Функція видалення відгуку
+function deleteReview(reviewId) {
+    if (!confirm('Ви впевнені, що хочете видалити цей відгук?')) {
+        return;
+    }
+    
+    fetch('<?= url('review/delete') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `review_id=${reviewId}&csrf_token=${window.csrfToken}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Видаляємо відгук з DOM
+            const reviewElement = document.getElementById(`review-${reviewId}`);
+            if (reviewElement) {
+                reviewElement.remove();
+            }
+            
+            // Показуємо повідомлення про успіх
+            showAlert('success', data.message);
+            
+            // Перезавантажуємо сторінку через 2 секунди для оновлення статистики
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showAlert('danger', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'Помилка при видаленні відгуку');
+    });
+}
+
 // Show alert
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
@@ -1011,4 +1218,17 @@ function showAlert(type, message) {
         }
     }, 5000);
 }
+
+// Initialize Bootstrap tabs
+document.addEventListener('DOMContentLoaded', function() {
+    const triggerTabList = [].slice.call(document.querySelectorAll('#productTabs button'));
+    triggerTabList.forEach(function (triggerEl) {
+        const tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+});
 </script>

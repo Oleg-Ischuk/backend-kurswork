@@ -71,12 +71,15 @@ class ProductController extends Controller {
         $reviews = $reviewModel->getProductReviews($id, 10);
         $reviewStats = $reviewModel->getReviewStats($id);
         
-        // Перевіряємо чи може користувач залишити відгук
+        // ✅ ЗМІНЕНО: Тепер всі авторизовані користувачі можуть залишати відгуки
         $canReview = false;
         $userReview = null;
+        $hasPurchased = false;
+        
         if (isset($_SESSION['user_id'])) {
-            $canReview = $reviewModel->canUserReview($_SESSION['user_id'], $id);
+            $canReview = true; // Дозволяємо всім авторизованим користувачам
             $userReview = $reviewModel->getUserReview($_SESSION['user_id'], $id);
+            $hasPurchased = $reviewModel->hasUserPurchased($_SESSION['user_id'], $id);
         }
         
         // Схожі товари
@@ -95,6 +98,7 @@ class ProductController extends Controller {
             'reviewStats' => $reviewStats,
             'canReview' => $canReview,
             'userReview' => $userReview,
+            'hasPurchased' => $hasPurchased, // ✅ ДОДАНО для відображення бейджа
             'relatedProducts' => $relatedProducts,
             'csrf_token' => $this->generateCsrfToken()
         ];
