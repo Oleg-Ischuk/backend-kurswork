@@ -486,7 +486,6 @@ main {
                         <i class="fas fa-user"></i><?= htmlspecialchars($_SESSION['user_name'] ?? 'Користувач') ?>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= url('profile') ?>"><i class="fas fa-user me-2"></i>Профіль</a></li>
                         <li><a class="dropdown-item" href="<?= url('orders') ?>"><i class="fas fa-box me-2"></i>Мої замовлення</a></li>
                         <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
                         <li><hr class="dropdown-divider"></li>
