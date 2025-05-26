@@ -4,10 +4,6 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/assets/
 RewriteRule ^(.*)$ - [L]
 
-# Allow access to common file types
-RewriteCond %{REQUEST_FILENAME} \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
-RewriteRule ^(.*)$ - [L]
-
 # Redirect all other requests to index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
