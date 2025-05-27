@@ -1,6 +1,3 @@
-// SportStore Main JavaScript
-import bootstrap from "bootstrap"; // Import Bootstrap
-
 class SportStore {
   constructor() {
     this.csrfToken = "";

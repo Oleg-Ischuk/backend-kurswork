@@ -574,7 +574,7 @@ endif;
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Custom JS -->
-<script src="<?= asset('js/main.js') ?>"></script>
+<script src="<?= asset('assets/js/main.js') ?>"></script>
 
 <!-- Initialize CSRF token for AJAX -->
 <script>

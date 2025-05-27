@@ -4,6 +4,7 @@
 }
 
 .filters-card {
+    width: 100%;
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 0.5rem;

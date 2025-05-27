@@ -410,7 +410,10 @@
     </div>
 </div>
 
+<!-- Замініть JavaScript частину в кінці файлу views/admin/categories/index.php на цей код: -->
+
 <script>
+// ✅ ВИПРАВЛЕНІ JAVASCRIPT ФУНКЦІЇ
 function getCategoryDataFromTable(categoryId) {
     const categoryRow = document.querySelector(`tr:has([onclick*="${categoryId}"])`);
     if (!categoryRow) return null;
@@ -462,27 +465,27 @@ function editCategory(categoryId) {
     modal.show();
 }
 
+// ✅ ВИПРАВЛЕНА ФУНКЦІЯ ОНОВЛЕННЯ КАТЕГОРІЇ
 document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
-    const data = new URLSearchParams();
     
-    for (let [key, value] of formData.entries()) {
-        data.append(key, value);
-    }
-    
+    // Використовуємо правильний URL маршрут
     fetch('<?= url('admin/categories/update') ?>', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: data.toString()
+        body: formData  // Відправляємо FormData напряму (не URLSearchParams)
     })
-    .then(response => response.json())
+    .then(response => {
+        // Перевіряємо чи відповідь є JSON
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            showNotification('success', 'Категорію успішно оновлено');
+            showNotification('success', data.message || 'Категорію успішно оновлено');
             bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
             setTimeout(() => location.reload(), 1000);
         } else {
@@ -490,10 +493,12 @@ document.getElementById('editCategoryForm').addEventListener('submit', function(
         }
     })
     .catch(error => {
+        console.error('Error:', error);
         showNotification('error', 'Помилка при оновленні категорії');
     });
 });
 
+// ✅ ВИПРАВЛЕНА ФУНКЦІЯ ВИДАЛЕННЯ КАТЕГОРІЇ
 function deleteCategory(categoryId) {
     const categoryData = getCategoryDataFromTable(categoryId);
     if (!categoryData) return;
@@ -502,31 +507,44 @@ function deleteCategory(categoryId) {
         return;
     }
     
+    // Створюємо FormData для відправки
+    const formData = new FormData();
+    formData.append('category_id', categoryId);
+    formData.append('csrf_token', '<?= $csrf_token ?>');
+    
+    // Використовуємо правильний URL маршрут
     fetch('<?= url('admin/categories/delete') ?>', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `category_id=${categoryId}&csrf_token=<?= $csrf_token ?>`
+        body: formData  // Відправляємо FormData напряму
     })
-    .then(response => response.json())
+    .then(response => {
+        // Перевіряємо чи відповідь є JSON
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            showNotification('success', 'Категорію успішно видалено');
+            showNotification('success', data.message || 'Категорію успішно видалено');
             setTimeout(() => location.reload(), 1000);
         } else {
             showNotification('error', data.message || 'Помилка при видаленні категорії');
         }
     })
     .catch(error => {
+        console.error('Error:', error);
         showNotification('error', 'Помилка при видаленні категорії');
     });
 }
 
+// ✅ ФУНКЦІЯ ПОКАЗУ ПОВІДОМЛЕНЬ
 function showNotification(type, message) {
+    // Видаляємо існуючі повідомлення
     const existingNotifications = document.querySelectorAll('.notification');
     existingNotifications.forEach(n => n.remove());
     
+    // Створюємо нове повідомлення
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = `
@@ -536,6 +554,7 @@ function showNotification(type, message) {
     
     document.body.appendChild(notification);
     
+    // Автоматично видалити через 5 секунд
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();

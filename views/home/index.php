@@ -274,8 +274,8 @@
                 return 'fas fa-trophy';
             }
             
-            foreach (array_slice($categories, 0, 8) as $category): 
-                $icon = getCategoryIcon($category['name']);
+            foreach ($categories as $category): 
+                    $icon = getCategoryIcon($category['name']);
             ?>
             <div class="category-card">
                 <i class="<?= $icon ?> category-icon"></i>

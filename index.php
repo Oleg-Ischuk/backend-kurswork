@@ -166,7 +166,7 @@ try {
             $controller->store();
             break;
             
-        // ✅ ДОДАНО МАРШРУТ ДЛЯ ВИДАЛЕННЯ
+        // Маршрут для видалення товарів
         case $path === '/admin/products/delete' && $_SERVER['REQUEST_METHOD'] === 'POST':
             $controller = new AdminProductController();
             $controller->delete();
@@ -182,7 +182,7 @@ try {
             $controller->update($matches[1]);
             break;
             
-        // Адмін - категорії
+        // ✅ ВИПРАВЛЕНІ МАРШРУТИ ДЛЯ КАТЕГОРІЙ
         case $path === '/admin/categories':
             $controller = new AdminCategoryController();
             $controller->index();
@@ -193,14 +193,16 @@ try {
             $controller->store();
             break;
             
-        case preg_match('/^\/admin\/categories\/(\d+)\/update$/', $path, $matches):
+        // ✅ ВИПРАВЛЕНИЙ МАРШРУТ ДЛЯ ОНОВЛЕННЯ КАТЕГОРІЇ
+        case $path === '/admin/categories/update' && $_SERVER['REQUEST_METHOD'] === 'POST':
             $controller = new AdminCategoryController();
-            $controller->update($matches[1]);
+            $controller->update(null);
             break;
             
-        case preg_match('/^\/admin\/categories\/(\d+)\/delete$/', $path, $matches):
+        // ✅ ВИПРАВЛЕНИЙ МАРШРУТ ДЛЯ ВИДАЛЕННЯ КАТЕГОРІЇ
+        case $path === '/admin/categories/delete' && $_SERVER['REQUEST_METHOD'] === 'POST':
             $controller = new AdminCategoryController();
-            $controller->delete($matches[1]);
+            $controller->delete(null);
             break;
             
         // Адмін - замовлення
@@ -224,25 +226,40 @@ try {
             $controller->delete($matches[1]);
             break;
             
-        // Адмін - користувачі
+        // ✅ ОНОВЛЕНІ МАРШРУТИ ДЛЯ КОРИСТУВАЧІВ
         case $path === '/admin/users':
             $controller = new AdminUserController();
             $controller->index();
             break;
             
+        // ✅ НОВИЙ МАРШРУТ ДЛЯ СТВОРЕННЯ КОРИСТУВАЧА
+        case $path === '/admin/users/store' && $_SERVER['REQUEST_METHOD'] === 'POST':
+            $controller = new AdminUserController();
+            $controller->store();
+            break;
+            
+        // ✅ НОВИЙ МАРШРУТ ДЛЯ ОНОВЛЕННЯ КОРИСТУВАЧА
+        case $path === '/admin/users/update' && $_SERVER['REQUEST_METHOD'] === 'POST':
+            $controller = new AdminUserController();
+            $controller->update();
+            break;
+            
+        // ✅ НОВИЙ МАРШРУТ ДЛЯ ВИДАЛЕННЯ КОРИСТУВАЧА
+        case $path === '/admin/users/delete' && $_SERVER['REQUEST_METHOD'] === 'POST':
+            $controller = new AdminUserController();
+            $controller->delete();
+            break;
+            
+        // Перегляд конкретного користувача
         case preg_match('/^\/admin\/users\/(\d+)$/', $path, $matches):
             $controller = new AdminUserController();
             $controller->show($matches[1]);
             break;
             
+        // ✅ ЗАЛИШАЄМО СТАРИЙ МАРШРУТ ДЛЯ ЗМІНИ РОЛІ (для сумісності)
         case preg_match('/^\/admin\/users\/(\d+)\/role$/', $path, $matches):
             $controller = new AdminUserController();
             $controller->updateRole($matches[1]);
-            break;
-            
-        case preg_match('/^\/admin\/users\/(\d+)\/delete$/', $path, $matches):
-            $controller = new AdminUserController();
-            $controller->delete($matches[1]);
             break;
             
         // API маршрути

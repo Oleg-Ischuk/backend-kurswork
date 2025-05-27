@@ -133,7 +133,7 @@
 .registration-date {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
 }
 
 .date-main {
@@ -149,7 +149,7 @@
 .action-buttons {
     display: flex;
     gap: 0.375rem;
-    justify-content: center;
+    justify-content: left;
 }
 
 .action-btn {
