@@ -41,6 +41,27 @@ function getStatusText($status) {
     margin: 0;
 }
 
+.clear-orders-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clear-orders-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.5rem rgba(220, 53, 69, 0.3);
+}
+
 .order-card {
     background: white;
     border: 1px solid #e2e8f0;
@@ -199,6 +220,11 @@ function getStatusText($status) {
     margin-bottom: 0.25rem;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .view-details-btn {
     background: transparent;
     color: #0d6efd;
@@ -212,11 +238,32 @@ function getStatusText($status) {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
+    flex: 1;
+    justify-content: center;
 }
 
 .view-details-btn:hover {
     background: #0d6efd;
     color: white;
+}
+
+.delete-order-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+}
+
+.delete-order-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
 }
 
 .empty-state {
@@ -264,7 +311,20 @@ function getStatusText($status) {
     box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.3);
 }
 
+/* Анімації для видалення */
+.order-card.removing {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: all 0.3s ease-out;
+}
+
 @media (max-width: 768px) {
+    .orders-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
     .order-header-row {
         grid-template-columns: 1fr;
         gap: 0.5rem;
@@ -282,6 +342,10 @@ function getStatusText($status) {
     
     .item-details {
         margin-right: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
     }
 }
 
@@ -308,16 +372,35 @@ function getStatusText($status) {
 </style>
 
 <div class="container orders-container">
-    <h2 class="orders-header">
-        <i class="fas fa-box"></i>
-        <span class="orders-title">Мої замовлення</span>
-    </h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="orders-header">
+            <i class="fas fa-box"></i>
+            <span class="orders-title">Мої замовлення</span>
+        </h2>
+        
+        <!-- ✅ КНОПКА ДЛЯ ОЧИЩЕННЯ ЗАВЕРШЕНИХ ЗАМОВЛЕНЬ -->
+        <?php 
+        $hasCompletedOrders = false;
+        foreach ($orders as $order) {
+            if (in_array($order['status'], ['delivered', 'cancelled'])) {
+                $hasCompletedOrders = true;
+                break;
+            }
+        }
+        ?>
+        
+        <?php if ($hasCompletedOrders): ?>
+        <button class="clear-orders-btn" onclick="clearCompletedOrders()">
+            <i class="fas fa-trash-alt"></i> Очистити завершені
+        </button>
+        <?php endif; ?>
+    </div>
     
     <?php if (!empty($orders)): ?>
     <div class="row">
         <?php foreach ($orders as $order): ?>
         <div class="col-12">
-            <div class="order-card">
+            <div class="order-card" data-order-id="<?= $order['id'] ?>" data-status="<?= $order['status'] ?>">
                 <div class="order-card-header">
                     <div class="order-header-row">
                         <div class="order-id">Замовлення #<?= $order['id'] ?></div>
@@ -352,9 +435,18 @@ function getStatusText($status) {
                                 <p><?= htmlspecialchars($order['shipping_postal_code']) ?></p>
                             </div>
                             
-                            <a href="<?= url('order/' . $order['id']) ?>" class="view-details-btn">
-                                <i class="fas fa-eye"></i>Детальніше
-                            </a>
+                            <div class="action-buttons">
+                                <a href="<?= url('order/' . $order['id']) ?>" class="view-details-btn">
+                                    <i class="fas fa-eye"></i>Детальніше
+                                </a>
+                                
+                                <!-- ✅ КНОПКА ВИДАЛЕННЯ ДЛЯ ЗАВЕРШЕНИХ ЗАМОВЛЕНЬ -->
+                                <?php if (in_array($order['status'], ['delivered', 'cancelled'])): ?>
+                                <button class="delete-order-btn" onclick="deleteOrder(<?= $order['id'] ?>)" title="Видалити замовлення">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -375,3 +467,152 @@ function getStatusText($status) {
     </div>
     <?php endif; ?>
 </div>
+
+<!-- ✅ JAVASCRIPT ДЛЯ ОЧИЩЕННЯ ЗАМОВЛЕНЬ -->
+<script>
+// CSRF token
+window.csrfToken = '<?= $this->generateCsrfToken() ?>';
+
+// Видалення одного замовлення
+function deleteOrder(orderId) {
+    if (!confirm('Ви впевнені, що хочете видалити це замовлення? Це дію не можна скасувати.')) {
+        return;
+    }
+    
+    fetch('<?= url('order/delete') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `order_id=${orderId}&csrf_token=${window.csrfToken}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Видаляємо картку замовлення з анімацією
+            const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+            if (orderCard) {
+                orderCard.classList.add('removing');
+                setTimeout(() => {
+                    orderCard.remove();
+                    checkIfEmpty();
+                    updateClearButton();
+                }, 300);
+            }
+            
+            showAlert('success', data.message);
+        } else {
+            showAlert('danger', data.message);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', 'Помилка при видаленні замовлення');
+    });
+}
+
+// Очищення всіх завершених замовлень
+function clearCompletedOrders() {
+    const completedOrders = document.querySelectorAll('[data-status="delivered"], [data-status="cancelled"]');
+    const count = completedOrders.length;
+    
+    if (count === 0) {
+        showAlert('info', 'Немає завершених замовлень для видалення');
+        return;
+    }
+    
+    if (!confirm(`Ви впевнені, що хочете видалити ВСІ завершені замовлення (${count} шт.)? Це дію не можна скасувати.`)) {
+        return;
+    }
+    
+    fetch('<?= url('orders/clear-completed') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `csrf_token=${window.csrfToken}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Видаляємо всі завершені замовлення з анімацією
+            completedOrders.forEach((orderCard, index) => {
+                setTimeout(() => {
+                    orderCard.classList.add('removing');
+                    setTimeout(() => {
+                        orderCard.remove();
+                        if (index === completedOrders.length - 1) {
+                            checkIfEmpty();
+                            updateClearButton();
+                        }
+                    }, 300);
+                }, index * 100);
+            });
+            
+            showAlert('success', `Видалено ${data.count} замовлень`);
+        } else {
+            showAlert('danger', data.message);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', 'Помилка при очищенні замовлень');
+    });
+}
+
+// Перевірка чи залишились замовлення
+function checkIfEmpty() {
+    const remainingOrders = document.querySelectorAll('.order-card:not(.removing)');
+    if (remainingOrders.length === 0) {
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
+}
+
+// Оновлення видимості кнопки очищення
+function updateClearButton() {
+    const completedOrders = document.querySelectorAll('[data-status="delivered"]:not(.removing), [data-status="cancelled"]:not(.removing)');
+    const clearBtn = document.querySelector('.clear-orders-btn');
+    
+    if (completedOrders.length === 0 && clearBtn) {
+        clearBtn.style.display = 'none';
+    }
+}
+
+// Показ повідомлень
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    `;
+    
+    let bgColor = '#198754';
+    if (type === 'danger') bgColor = '#dc3545';
+    if (type === 'info') bgColor = '#0dcaf0';
+    if (type === 'warning') bgColor = '#ffc107';
+    
+    alertDiv.style.backgroundColor = bgColor;
+    alertDiv.style.color = 'white';
+    
+    alertDiv.innerHTML = `
+        <span>${message}</span>
+        <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.remove()" style="margin-left: 1rem; background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">&times;</button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>

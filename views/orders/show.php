@@ -529,6 +529,7 @@ function getStatusText($status) {
 
 <script>
 // Cancel order
+// Cancel order
 function cancelOrder(orderId) {
     if (!confirm('Ви впевнені, що хочете скасувати це замовлення?')) {
         return;
@@ -544,7 +545,14 @@ function cancelOrder(orderId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            // Показуємо повідомлення про успіх з лічильником
+            showSuccessAlert(data.message);
+            
+            // Перенаправляємо через 5 секунд
+            setTimeout(() => {
+                window.location.href = '<?= url('orders') ?>';
+            }, 5000);
+            
         } else {
             alert(data.message);
         }
@@ -552,5 +560,75 @@ function cancelOrder(orderId) {
     .catch(error => {
         alert('Помилка при скасуванні замовлення');
     });
+}
+
+// Функція для показу повідомлення з лічильником
+function showSuccessAlert(message) {
+    // Створюємо контейнер для повідомлення
+    const alertContainer = document.createElement('div');
+    alertContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: #198754;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        font-weight: 500;
+        min-width: 300px;
+    `;
+    
+    // Створюємо текст повідомлення
+    const messageText = document.createElement('div');
+    messageText.textContent = message;
+    alertContainer.appendChild(messageText);
+    
+    // Створюємо лічильник
+    const countdownText = document.createElement('div');
+    countdownText.style.cssText = `
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    `;
+    alertContainer.appendChild(countdownText);
+    
+    // Додаємо до сторінки
+    document.body.appendChild(alertContainer);
+    
+    // Запускаємо лічильник
+    let seconds = 5;
+    countdownText.textContent = `Перенаправлення через ${seconds} секунд...`;
+    
+    const countdown = setInterval(() => {
+        seconds--;
+        if (seconds > 0) {
+            countdownText.textContent = `Перенаправлення через ${seconds} секунд...`;
+        } else {
+            countdownText.textContent = 'Перенаправлення...';
+            clearInterval(countdown);
+        }
+    }, 1000);
+    
+    // Додаємо можливість закрити повідомлення
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 0.5rem;
+        right: 0.75rem;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        cursor: pointer;
+        line-height: 1;
+    `;
+    closeBtn.onclick = () => {
+        document.body.removeChild(alertContainer);
+        clearInterval(countdown);
+    };
+    alertContainer.appendChild(closeBtn);
 }
 </script>

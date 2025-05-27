@@ -163,10 +163,18 @@ class Product extends Model {
         return $this->query($sql);
     }
     
+    // ✅ МЕТОД ДЛЯ ЗМЕНШЕННЯ КІЛЬКОСТІ НА СКЛАДІ
     public function decreaseStock($productId, $quantity) {
         $sql = "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$quantity, $productId, $quantity]);
+    }
+    
+    // ✅ НОВИЙ МЕТОД ДЛЯ ЗБІЛЬШЕННЯ КІЛЬКОСТІ НА СКЛАДІ
+    public function increaseStock($productId, $quantity) {
+        $sql = "UPDATE products SET stock = stock + ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$quantity, $productId]);
     }
     
     public function addProductImage($productId, $imageUrl, $isMain = false) {
