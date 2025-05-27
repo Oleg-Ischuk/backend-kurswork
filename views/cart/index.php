@@ -88,16 +88,38 @@
         width: fit-content;
     }
 
-    /* Ціна товару */
+    /* ✅ ОНОВЛЕНА ЦІНА ТОВАРУ З ВІДОБРАЖЕННЯМ ЗНИЖКИ */
     .cart-item-price {
-        font-weight: 700;
-        color: #0d6efd;
-        font-size: 1.2rem;
         text-align: center;
         padding: 0.5rem;
         background: linear-gradient(135deg, #f8f9fa, #e9ecef);
         border-radius: 0.5rem;
         min-width: 80px;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .current-price {
+        font-weight: 700;
+        color: #0d6efd;
+        font-size: 1.2rem;
+    }
+
+    .discount-badge {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.5rem;
+        margin-top: 0.25rem;
+        display: inline-block;
     }
 
     /* Покращені контроли кількості */
@@ -500,7 +522,16 @@
                                     <div class="cart-item-category"><?= htmlspecialchars($item['category_name']) ?></div>
                                 </div>
 
-                                <div class="cart-item-price"><?= number_format($item['price'], 2) ?> ₴</div>
+                                <!-- ✅ ОНОВЛЕНЕ ВІДОБРАЖЕННЯ ЦІНИ ЗІ ЗНИЖКОЮ -->
+                                <div class="cart-item-price">
+                                    <?php if ($item['discount'] > 0): ?>
+                                        <span class="original-price"><?= number_format($item['price'], 2) ?> ₴</span>
+                                        <span class="current-price"><?= number_format($item['final_price'], 2) ?> ₴</span>
+                                        <div class="discount-badge">-<?= $item['discount'] ?>%</div>
+                                    <?php else: ?>
+                                        <span class="current-price"><?= number_format($item['price'], 2) ?> ₴</span>
+                                    <?php endif; ?>
+                                </div>
 
                                 <div>
                                     <div class="quantity-controls">

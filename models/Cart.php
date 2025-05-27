@@ -52,6 +52,7 @@ class Cart
         return array_sum($cart);
     }
 
+    // ✅ ВИПРАВЛЕНИЙ МЕТОД - тепер враховує знижки
     public static function getTotal()
     {
         $cart = self::get();
@@ -62,7 +63,12 @@ class Cart
             foreach ($cart as $productId => $quantity) {
                 $product = $productModel->find($productId);
                 if ($product) {
-                    $total += $product['price'] * $quantity;
+                    // Розраховуємо ціну зі знижкою
+                    $price = $product['price'];
+                    if ($product['discount'] > 0) {
+                        $price = $product['price'] * (1 - $product['discount'] / 100);
+                    }
+                    $total += $price * $quantity;
                 }
             }
         }
@@ -70,7 +76,7 @@ class Cart
         return $total;
     }
 
-    // ✅ ВИПРАВЛЕНИЙ МЕТОД - правильне завантаження зображень
+    // ✅ ВИПРАВЛЕНИЙ МЕТОД - тепер додає розраховану ціну зі знижкою
     public static function getItems()
     {
         $cart = self::get();
@@ -79,7 +85,7 @@ class Cart
         if (!empty($cart)) {
             $productModel = new Product();
             foreach ($cart as $productId => $quantity) {
-                // Отримуємо повну інформацию про товар з зображенням
+                // Отримуємо повну інформацію про товар з зображенням
                 $sql = "SELECT p.*, c.name as category_name, b.name as brand_name,
                                pi.image_url as main_image,
                                AVG(r.rating) as avg_rating,
@@ -95,8 +101,15 @@ class Cart
                 $product = $productModel->queryOne($sql, [$productId]);
 
                 if ($product) {
+                    // Розраховуємо ціну зі знижкою
+                    $finalPrice = $product['price'];
+                    if ($product['discount'] > 0) {
+                        $finalPrice = $product['price'] * (1 - $product['discount'] / 100);
+                    }
+
                     $product['quantity'] = $quantity;
-                    $product['subtotal'] = $product['price'] * $quantity;
+                    $product['final_price'] = $finalPrice; // додаємо фінальну ціну
+                    $product['subtotal'] = $finalPrice * $quantity; // використовуємо фінальну ціну
                     $items[] = $product;
                 }
             }
