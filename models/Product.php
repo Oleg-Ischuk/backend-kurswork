@@ -17,7 +17,7 @@ class Product extends Model
                 LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_main = 1
                 LEFT JOIN reviews r ON p.id = r.product_id
                 GROUP BY p.id, c.name, b.name, pi.image_url
-                ORDER BY p.created_at DESC";
+                ORDER BY p.id ASC";
 
         if ($limit) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";

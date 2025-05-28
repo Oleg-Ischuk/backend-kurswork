@@ -114,7 +114,7 @@ class Order extends Model
                 LEFT JOIN users u ON o.user_id = u.id
                 LEFT JOIN order_items oi ON o.id = oi.order_id
                 GROUP BY o.id, o.user_id, o.total_price, o.status, o.address, o.city, o.postal_code, o.created_at, u.first_name, u.last_name, u.email
-                ORDER BY o.created_at DESC";
+                ORDER BY o.id DESC";
 
         if ($limit) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";

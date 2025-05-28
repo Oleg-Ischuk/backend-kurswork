@@ -1,28 +1,33 @@
 <?php
 // models/User.php
-class User extends Model {
+class User extends Model
+{
     protected $table = 'users';
-    
-    public function createUser($data) {
+
+    public function createUser($data)
+    {
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         return $this->create($data);
     }
-    
-    public function checkLogin($email, $password) {
+
+    public function checkLogin($email, $password)
+    {
         $user = $this->findWhere('email', $email);
-        
+
         if ($user && password_verify($password, $user['password'])) {
             return $user;
         }
         return false;
     }
-    
-    public function emailExists($email) {
+
+    public function emailExists($email)
+    {
         return $this->findWhere('email', $email) !== false;
     }
-    
+
     // ✅ ВИПРАВЛЕНИЙ МЕТОД - додано поля адреси та завантаження товарів
-    public function getUserOrders($userId) {
+    public function getUserOrders($userId)
+    {
         $sql = "SELECT o.id, 
                        o.total_price as total_amount,
                        o.status,
@@ -37,9 +42,9 @@ class User extends Model {
                 WHERE o.user_id = ? 
                 GROUP BY o.id, o.total_price, o.status, o.address, o.city, o.postal_code, o.created_at
                 ORDER BY o.created_at DESC";
-        
+
         $orders = $this->query($sql, [$userId]);
-        
+
         // ✅ ДОДАЄМО ТОВАРИ ДО КОЖНОГО ЗАМОВЛЕННЯ
         foreach ($orders as &$order) {
             $itemsSql = "SELECT oi.*, 
@@ -49,29 +54,33 @@ class User extends Model {
                          LEFT JOIN products p ON oi.product_id = p.id
                          LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_main = 1
                          WHERE oi.order_id = ?";
-            
+
             $order['items'] = $this->query($itemsSql, [$order['id']]);
         }
-        
+
         return $orders;
     }
-    
-    public function updateProfile($userId, $data) {
+
+    public function updateProfile($userId, $data)
+    {
         if (empty($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         }
-        
+
         return $this->update($userId, $data);
     }
-    
-    public function getAllUsers($limit = null, $offset = 0) {
-        $sql = "SELECT id, first_name, last_name, email, role, created_at FROM users ORDER BY created_at DESC";
+
+    public function getAllUsers($limit = null, $offset = 0)
+    {
+        $sql = "SELECT id, first_name, last_name, email, role, created_at 
+            FROM users 
+            ORDER BY id ASC";
+
         if ($limit) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";
         }
         return $this->query($sql);
     }
 }
-?>
