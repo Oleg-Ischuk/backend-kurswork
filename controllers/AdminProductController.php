@@ -16,7 +16,7 @@ class AdminProductController extends Controller
         $brandModel = new Brand();
 
         $page = (int)($_GET['page'] ?? 1);
-        $limit = 20;
+        $limit = 6;
         $offset = ($page - 1) * $limit;
 
         // Отримуємо параметри фільтрації
