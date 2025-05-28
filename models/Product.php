@@ -80,11 +80,6 @@ class Product extends Model
         return $this->query($sql, [$productId]);
     }
 
-    public function getProductAttributes($productId)
-    {
-        $sql = "SELECT * FROM product_attributes WHERE product_id = ?";
-        return $this->query($sql, [$productId]);
-    }
 
     public function searchProducts($query, $categoryId = null, $brandId = null, $minPrice = null, $maxPrice = null)
     {

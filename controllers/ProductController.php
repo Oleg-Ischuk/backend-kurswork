@@ -67,9 +67,6 @@ class ProductController extends Controller
         // Отримуємо зображення товару
         $images = $productModel->getProductImages($id);
 
-        // Отримуємо атрибути товару
-        $attributes = $productModel->getProductAttributes($id);
-
         // Отримуємо відгуки
         $reviews = $reviewModel->getProductReviews($id, 10);
         $reviewStats = $reviewModel->getReviewStats($id);
@@ -96,7 +93,6 @@ class ProductController extends Controller
             'title' => $product['name'],
             'product' => $product,
             'images' => $images,
-            'attributes' => $attributes,
             'reviews' => $reviews,
             'reviewStats' => $reviewStats,
             'canReview' => $canReview,
