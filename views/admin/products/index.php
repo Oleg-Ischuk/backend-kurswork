@@ -58,25 +58,42 @@
         gap: 0.75rem;
     }
 
+    /* ✅ ПОКРАЩЕНІ СТИЛІ ДЛЯ ЗОБРАЖЕНЬ */
     .product-image {
-        width: 60px;
-        height: 60px;
-        border-radius: 0.375rem;
-        object-fit: cover;
-        border: 1px solid #dee2e6;
+        width: 150px;
+        height: 150px;
+        border-radius: 0.5rem;
+        object-fit: contain;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-image:hover {
+        transform: scale(1.1);
+        border-color: #667eea;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
     }
 
     .product-placeholder {
         width: 60px;
         height: 60px;
-        border-radius: 0.375rem;
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        border: 1px solid #dee2e6;
+        border: 2px solid #e2e8f0;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-placeholder:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
     }
 
     .product-details {
@@ -431,7 +448,9 @@
                                     <td>
                                         <div class="product-info">
                                             <?php if (!empty($product['main_image'])): ?>
-                                                <img src="<?= htmlspecialchars($product['main_image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="product-image">
+                                                <img src="<?= imageUrl($product['main_image']) ?>"
+                                                    alt="<?= htmlspecialchars($product['name']) ?>"
+                                                    class="product-image">
                                             <?php else: ?>
                                                 <div class="product-placeholder">
                                                     <i class="fas fa-box"></i>
@@ -611,7 +630,6 @@
                             </label>
                             <input type="number" class="form-control" id="stock" name="stock" required>
                         </div>
-                        <!-- ✅ ЗАМІНЕНО ПОЛЕ sale_price НА discount -->
                         <div class="col-md-4 mb-3">
                             <label for="discount" class="form-label">
                                 <i class="fas fa-percentage me-1"></i>Знижка (%)
