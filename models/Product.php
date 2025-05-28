@@ -80,13 +80,13 @@ class Product extends Model
         return $this->query($sql, [$productId]);
     }
 
-
     public function searchProducts($query, $categoryId = null, $brandId = null, $minPrice = null, $maxPrice = null)
     {
-        // ✅ ВИПРАВЛЕНИЙ SQL запит з правильним GROUP BY
+        // ✅ ВИПРАВЛЕНИЙ SQL запит з додаванням reviews_count
         $sql = "SELECT p.*, c.name as category_name, b.name as brand_name,
                        pi.image_url as main_image,
-                       AVG(r.rating) as avg_rating
+                       AVG(r.rating) as avg_rating,
+                       COUNT(DISTINCT r.id) as reviews_count
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
                 LEFT JOIN brands b ON p.brand_id = b.id
@@ -129,9 +129,10 @@ class Product extends Model
 
     public function getProductsByCategory($categoryId, $limit = null)
     {
-        // ✅ ВИПРАВЛЕНИЙ SQL запит
+        // ✅ ВИПРАВЛЕНИЙ SQL запит з додаванням reviews_count
         $sql = "SELECT p.*, pi.image_url as main_image,
-                       AVG(r.rating) as avg_rating
+                       AVG(r.rating) as avg_rating,
+                       COUNT(DISTINCT r.id) as reviews_count
                 FROM products p
                 LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_main = 1
                 LEFT JOIN reviews r ON p.id = r.product_id
@@ -147,9 +148,10 @@ class Product extends Model
 
     public function getPopularProducts($limit = 8)
     {
-        // ✅ ВИПРАВЛЕНИЙ SQL запит
+        // ✅ ВИПРАВЛЕНИЙ SQL запит з додаванням reviews_count
         $sql = "SELECT p.*, pi.image_url as main_image,
                        AVG(r.rating) as avg_rating,
+                       COUNT(DISTINCT r.id) as reviews_count,
                        COUNT(DISTINCT oi.id) as order_count
                 FROM products p
                 LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_main = 1
@@ -164,9 +166,10 @@ class Product extends Model
 
     public function getNewProducts($limit = 8)
     {
-        // ✅ ВИПРАВЛЕНИЙ SQL запит
+        // ✅ ВИПРАВЛЕНИЙ SQL запит з додаванням reviews_count
         $sql = "SELECT p.*, pi.image_url as main_image,
-                       AVG(r.rating) as avg_rating
+                       AVG(r.rating) as avg_rating,
+                       COUNT(DISTINCT r.id) as reviews_count
                 FROM products p
                 LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_main = 1
                 LEFT JOIN reviews r ON p.id = r.product_id
