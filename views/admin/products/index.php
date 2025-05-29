@@ -67,6 +67,8 @@
         border: 2px solid #e2e8f0;
         transition: all 0.3s ease;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        mix-blend-mode: multiply;
+        filter: brightness(1.1) contrast(1);
     }
 
     .product-image:hover {

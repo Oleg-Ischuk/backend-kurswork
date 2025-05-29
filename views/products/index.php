@@ -150,7 +150,6 @@
         margin-bottom: 2rem;
     }
 
-    /* ✅ ПОКРАЩЕНІ СТИЛІ ДЛЯ КАРТОК ТОВАРІВ */
     .product-card {
         background: white;
         border: 1px solid #e2e8f0;
@@ -185,6 +184,8 @@
         background: white;
         border-radius: 0.5rem;
         margin: 0.5rem;
+        mix-blend-mode: multiply;
+        filter: brightness(1.1) contrast(1);
     }
 
     .product-card:hover .product-image {

@@ -580,7 +580,7 @@
 
     .related-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 1.5rem;
     }
 
@@ -592,6 +592,7 @@
         transition: all 0.2s;
         display: flex;
         flex-direction: column;
+        height: 350px;
     }
 
     .related-card:hover {
@@ -599,9 +600,23 @@
         transform: translateY(-2px);
     }
 
+    .related-image-container {
+        height: 180px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+    }
+
     .related-image {
         width: 100%;
+        height: 100%;
         object-fit: contain;
+        object-position: center;
+        filter: brightness(1) contrast(1);
+        mix-blend-mode: multiply;
+
     }
 
     .related-body {
@@ -609,13 +624,21 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
     }
 
     .related-title-small {
         font-weight: 600;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         color: #2d3748;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        height: 2.8rem;
     }
 
     .related-footer {
@@ -632,10 +655,12 @@
     .related-price {
         font-weight: 600;
         color: #0d6efd;
+        font-size: 1.1rem;
     }
 
     .related-rating {
         color: #ffc107;
+        font-size: 0.85rem;
     }
 
     .related-btn {
@@ -649,11 +674,14 @@
         font-size: 0.9rem;
         font-weight: 500;
         transition: all 0.2s;
+        display: block;
+        width: 100%;
     }
 
     .related-btn:hover {
         background: #0d6efd;
         color: white;
+        text-decoration: none;
     }
 
     .alert {
@@ -743,13 +771,20 @@
         }
 
         .related-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
         }
 
-        .review-actions {
-            position: static;
-            margin-top: 1rem;
-            justify-content: flex-end;
+        .related-card {
+            height: 320px;
+        }
+
+        .related-image-container {
+            height: 150px;
+        }
+
+        .related-title-small {
+            font-size: 0.9rem;
         }
     }
 
@@ -767,6 +802,18 @@
 
         .thumbnail-images {
             grid-template-columns: repeat(2, 1fr);
+        }
+
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .related-card {
+            height: 300px;
+        }
+
+        .related-image-container {
+            height: 140px;
         }
     }
 </style>
@@ -1078,8 +1125,10 @@
             <div class="related-grid">
                 <?php foreach (array_slice($relatedProducts, 0, 4) as $relatedProduct): ?>
                     <div class="related-card">
-                        <img src="<?= url($relatedProduct['main_image'] ?? 'assets/images/no-image.jpg') ?>"
-                            class="related-image" alt="<?= htmlspecialchars($relatedProduct['name']) ?>">
+                        <div class="related-image-container">
+                            <img src="<?= url($relatedProduct['main_image'] ?? 'assets/images/no-image.jpg') ?>"
+                                class="related-image" alt="<?= htmlspecialchars($relatedProduct['name']) ?>">
+                        </div>
                         <div class="related-body">
                             <h6 class="related-title-small"><?= htmlspecialchars($relatedProduct['name']) ?></h6>
                             <div class="related-footer">
