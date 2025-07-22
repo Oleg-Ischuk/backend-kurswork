@@ -13,9 +13,6 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         padding: 0.75rem 2rem;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
     .navbar .container-fluid {
@@ -33,31 +30,28 @@
         color: white !important;
         display: flex;
         align-items: center;
+        margin-left: 10px;
         gap: 0.5rem;
         padding: 0.5rem 0;
         flex-shrink: 0;
-        margin-left: 10px;
     }
 
     .navbar-collapse {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         flex-grow: 1;
+        margin-left: 2rem;
     }
 
     .navbar-nav {
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 0.5rem;
-        margin-left: 10px;
-        margin-right: 10px;
     }
 
     .navbar-nav.me-auto {
-        justify-content: center;
-        max-width: none;
+        justify-content: flex-start;
     }
 
     .navbar-nav .nav-item {
@@ -67,7 +61,7 @@
     .navbar-nav .nav-link {
         color: rgba(255, 255, 255, 0.9) !important;
         font-weight: 500;
-        padding: 0.75rem 1.25rem !important;
+        padding: 10px;
         border-radius: 0.5rem;
         transition: all 0.3s ease;
         display: flex;
@@ -77,8 +71,7 @@
         min-height: 44px;
         text-align: center;
         white-space: nowrap;
-        font-size: 0.95rem;
-        min-width: 100px;
+        font-size: 0.85rem;
     }
 
     .navbar-nav .nav-link:hover,
@@ -112,6 +105,8 @@
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         background: white;
+        margin-left: 5px;
+        margin-right: 5px;
     }
 
     .search-input {
@@ -193,13 +188,9 @@
 
     /* Navbar Toggler */
     .navbar-toggler {
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-right: 5px;
         padding: 0.5rem;
-        margin-left: auto;
-    }
-
-    .navbar-toggler:focus {
-        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        margin-left: 1rem;
     }
 
     .navbar-toggler-icon {
@@ -239,7 +230,6 @@
     main {
         min-height: calc(100vh - 200px);
         padding-top: 0;
-        /* Прибрано зайві відступи */
     }
 
     /* Footer */
@@ -314,6 +304,10 @@
 
     /* Responsive Design */
     @media (max-width: 1200px) {
+        .navbar {
+            padding: 0.75rem 1.5rem;
+        }
+
         .search-input {
             width: 200px;
         }
@@ -329,14 +323,104 @@
             padding: 0.75rem 1rem;
         }
 
-        .search-input {
-            width: 180px;
+        /* Колапс меню стає активним */
+        .navbar-collapse {
+            margin-left: 0;
+            margin-top: 1rem;
+            width: 100%;
         }
 
-        .navbar-nav .nav-link {
-            padding: 0.5rem 0.75rem !important;
-            font-size: 0.9rem;
-            min-width: 80px;
+        .navbar-collapse.show {
+            display: block !important;
+        }
+
+        .navbar-collapse:not(.show) {
+            display: none !important;
+        }
+
+        .navbar .container-fluid {
+            flex-wrap: wrap;
+        }
+
+        .navbar-brand {
+            flex-grow: 1;
+        }
+
+        /* ГОЛОВНА та ТОВАРИ в одному рядку */
+        .navbar-nav.me-auto {
+            flex-direction: row !important;
+            width: 100%;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .navbar-nav.me-auto .nav-item {
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .navbar-nav.me-auto .nav-link {
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.375rem;
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+            min-width: auto;
+            font-size: 0.95rem;
+        }
+
+        /* ПОШУК на окремому рівні */
+        .search-form {
+            width: 100%;
+            margin: 1rem 0;
+            justify-content: center;
+            order: 2;
+        }
+
+        .search-input-group {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            flex: 1;
+        }
+
+        /* КОШИК, УВІЙТИ, РЕЄСТРАЦІЯ в одному рядку */
+        .navbar-nav:last-child {
+            justify-content: space-around;
+            flex-direction: row !important;
+            width: 100%;
+            gap: 1rem;
+            order: 3;
+        }
+
+        .navbar-nav:last-child .nav-item {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .cart-link,
+        .navbar-nav:last-child .nav-link {
+            min-width: auto;
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.95rem;
+        }
+
+        .user-dropdown .nav-link {
+            min-width: auto;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Dropdown меню */
+        .dropdown-menu {
+            width: 100%;
+            text-align: center;
         }
 
         .footer-bottom {
@@ -346,75 +430,149 @@
         }
     }
 
+    /* ПОКРАЩЕНА ПЛАНШЕТНА ТА МОБІЛЬНА АДАПТАЦІЯ */
     @media (max-width: 768px) {
         .navbar {
-            padding: 0.5rem 1rem;
-            flex-direction: column;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Колапс меню стає активним */
+        .navbar-collapse {
+            margin-left: 0;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .navbar-collapse.show {
+            display: block !important;
+        }
+
+        .navbar-collapse:not(.show) {
+            display: none !important;
         }
 
         .navbar .container-fluid {
-            flex-direction: column;
-            width: 100%;
+            flex-wrap: wrap;
         }
 
         .navbar-brand {
+            flex-grow: 1;
+        }
+
+        /* ГОЛОВНА та ТОВАРИ в одному рядку */
+        .navbar-nav.me-auto {
+            flex-direction: row !important;
+            width: 100%;
+            justify-content: space-around;
             margin-bottom: 1rem;
+            gap: 1rem;
         }
 
-        .navbar-collapse {
+        .navbar-nav.me-auto .nav-item {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .navbar-nav.me-auto .nav-link {
+            padding: 0.75rem 0.5rem !important;
+            border-radius: 0.375rem;
             width: 100%;
             justify-content: center;
+            text-align: center;
+            min-width: auto;
+            font-size: 0.9rem;
         }
 
+        /* ПОШУК на окремому рівні */
         .search-form {
-            margin: 1rem 0;
             width: 100%;
+            margin: 1rem 0;
             justify-content: center;
+            order: 2;
+        }
+
+        .search-input-group {
+            width: 100%;
+            max-width: 400px;
         }
 
         .search-input {
-            width: 250px;
+            width: 100%;
+            flex: 1;
         }
 
-        .navbar-nav {
-            flex-direction: column;
+        /* КОШИК, УВІЙТИ, РЕЄСТРАЦІЯ в одному рядку */
+        .navbar-nav:last-child {
+            justify-content: space-around;
+            flex-direction: row !important;
+            width: 100%;
+            gap: 1rem;
+            order: 3;
+        }
+
+        .navbar-nav:last-child .nav-item {
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .cart-link,
+        .navbar-nav:last-child .nav-link {
+            min-width: auto;
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 0.5rem !important;
+            font-size: 0.9rem;
+        }
+
+        .user-dropdown .nav-link {
+            min-width: auto;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Dropdown меню */
+        .dropdown-menu {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .navbar-nav:last-child {
+            justify-content: center;
+            flex-direction: column !important;
             width: 100%;
             gap: 0.5rem;
+            order: 3;
         }
 
-        .navbar-nav.me-auto {
-            margin-bottom: 1rem;
-        }
-
-        .navbar-nav .nav-item {
+        .navbar-nav:last-child .nav-item {
             width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
         }
 
-        .navbar-nav .nav-link {
-            padding: 0.75rem 1rem !important;
-            border-radius: 0.375rem;
-            margin: 0.125rem 0;
+        .navbar-nav:last-child .nav-link {
+            font-size: 0.85rem;
+            padding: 0.6rem 0.8rem !important;
             width: 100%;
             justify-content: center;
         }
     }
 
-    @media (max-width: 576px) {
-        .navbar {
-            padding: 0.5rem;
-        }
+    /* Додаткові стилі для забезпечення правильної роботи Bootstrap collapse */
+    .navbar-collapse.collapse:not(.show) {
+        display: none;
+    }
 
-        .navbar-brand {
-            font-size: 1.25rem;
-        }
+    .navbar-collapse.collapsing {
+        height: 0;
+        overflow: hidden;
+        transition: height 0.35s ease;
+    }
 
-        .search-input {
-            width: 200px;
-        }
-
-        .navbar-nav .nav-link {
-            font-size: 0.9rem;
-        }
+    .navbar-collapse.collapse.show {
+        display: block;
     }
 </style>
 

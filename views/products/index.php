@@ -9,7 +9,7 @@
         border: 1px solid #dee2e6;
         border-radius: 0.5rem;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        margin-bottom: 1.5rem;
+        margin: 10px
     }
 
     .filters-header {
