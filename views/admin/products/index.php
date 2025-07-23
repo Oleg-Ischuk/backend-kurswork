@@ -658,6 +658,8 @@
         </div>
     </div>
 </div>
+<!-- Підключаємо SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // CSRF token for requests
@@ -672,68 +674,124 @@
     }
 
     function deleteProduct(productId) {
-        if (!confirm('Ви впевнені, що хочете видалити цей товар? Цю дію неможливо скасувати.')) {
-            return;
-        }
+        Swal.fire({
+            title: 'Підтвердіть видалення',
+            text: 'Ви дійсно хочете видалити цей товар? Цю дію неможливо скасувати.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74a3b',
+            cancelButtonColor: '#858796',
+            confirmButtonText: 'Так, видалити',
+            cancelButtonText: 'Скасувати'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-        const button = document.querySelector(`button[onclick="deleteProduct(${productId})"]`);
-        const originalText = button.innerHTML;
+            const button = document.querySelector(`button[onclick="deleteProduct(${productId})"]`);
+            const originalText = button.innerHTML;
 
-        // Показуємо індикатор завантаження
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        button.disabled = true;
+            // Показуємо індикатор завантаження
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
 
-        fetch('<?= url("admin/products/delete") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: `product_id=${productId}&csrf_token=${window.csrfToken}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Видаляємо рядок з таблиці
-                    const row = document.getElementById(`product-row-${productId}`);
-                    if (row) {
-                        row.style.transition = 'opacity 0.3s';
-                        row.style.opacity = '0';
-                        setTimeout(() => {
-                            row.remove();
-                        }, 300);
+            fetch('<?= url("admin/products/delete") ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `product_id=${productId}&csrf_token=${window.csrfToken}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Видаляємо рядок з таблиці
+                        const row = document.getElementById(`product-row-${productId}`);
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                            }, 300);
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Успіх!',
+                            text: 'Товар успішно видалено!',
+                            confirmButtonColor: '#667eea',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error(data.message || 'Помилка видалення товару');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
 
-                    showNotification('success', 'Товар успішно видалено!');
-                } else {
-                    throw new Error(data.message || 'Помилка видалення товару');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                button.innerHTML = originalText;
-                button.disabled = false;
-                showNotification('error', 'Помилка: ' + error.message);
-            });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Помилка!',
+                        text: 'Помилка: ' + error.message,
+                        confirmButtonColor: '#667eea'
+                    });
+                });
+        });
     }
 
     function showNotification(type, message) {
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(n => n.remove());
-
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-        <span><i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}</span>
-        <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
-    `;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 5000);
+        // Замінюємо на SweetAlert для кращої консистентності
+        if (type === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Успіх!',
+                text: message,
+                confirmButtonColor: '#667eea',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка!',
+                text: message,
+                confirmButtonColor: '#667eea'
+            });
+        }
     }
+
+    // Валідація форми створення товару
+    document.addEventListener('DOMContentLoaded', function() {
+        const createForm = document.querySelector('#createProductModal form');
+        if (createForm) {
+            createForm.addEventListener('submit', function(e) {
+                const price = parseFloat(document.getElementById('price').value);
+                const stock = parseInt(document.getElementById('stock').value);
+
+                if (price <= 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Помилка валідації',
+                        text: 'Ціна повинна бути більше 0',
+                        confirmButtonColor: '#667eea'
+                    });
+                    return;
+                }
+
+                if (stock < 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Помилка валідації',
+                        text: 'Кількість на складі не може бути від\'ємною',
+                        confirmButtonColor: '#667eea'
+                    });
+                    return;
+                }
+            });
+        }
+    });
 </script>

@@ -596,24 +596,6 @@ function getStatusText($status)
             display: none !important;
         }
 
-        .invoice-header {
-            background: #667eea !important;
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-        }
-
-        .invoice-items-table thead {
-            background: #667eea !important;
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-        }
-
-        .invoice-status-badge,
-        .invoice-quantity-badge {
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-        }
-
         @page {
             margin: 1cm;
             size: A4;
@@ -914,6 +896,9 @@ function getStatusText($status)
     </div>
 </div>
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     const orderId = <?= $order['id'] ?>;
     const csrfToken = '<?= $csrf_token ?>';
@@ -921,29 +906,90 @@ function getStatusText($status)
 
     function updateStatus() {
         const newStatus = document.getElementById('statusSelect').value;
+        const originalStatus = '<?= $order['status'] ?>';
 
-        if (!confirm('Оновити статус замовлення?')) {
+        if (newStatus === originalStatus) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Інформація',
+                text: 'Статус не змінився',
+                confirmButtonColor: '#667eea'
+            });
             return;
         }
 
-        fetch('<?= url('admin/orders/update-status') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `order_id=${orderId}&status=${newStatus}&csrf_token=${csrfToken}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'Помилка при оновленні статусу');
-                }
-            })
-            .catch(error => {
-                alert('Помилка при оновленні статусу');
-            });
+        Swal.fire({
+            title: 'Підтвердіть зміну',
+            text: 'Змінити статус замовлення?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#667eea',
+            cancelButtonColor: '#858796',
+            confirmButtonText: 'Так, змінити',
+            cancelButtonText: 'Скасувати'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Показуємо індикатор завантаження
+                Swal.fire({
+                    title: 'Оновлення статусу...',
+                    text: 'Будь ласка, зачекайте',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch('<?= url('admin/orders/update-status') ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `order_id=${orderId}&status=${newStatus}&csrf_token=${csrfToken}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Успіх!',
+                                text: 'Статус замовлення успішно оновлено',
+                                confirmButtonColor: '#667eea',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            // Повертаємо попередній статус
+                            document.getElementById('statusSelect').value = originalStatus;
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Помилка!',
+                                text: data.message || 'Помилка при оновленні статусу',
+                                confirmButtonColor: '#667eea'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Повертаємо попередній статус
+                        document.getElementById('statusSelect').value = originalStatus;
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Помилка!',
+                            text: 'Помилка при оновленні статусу',
+                            confirmButtonColor: '#667eea'
+                        });
+                    });
+            } else {
+                // Повертаємо попередній статус якщо користувач скасував
+                document.getElementById('statusSelect').value = originalStatus;
+            }
+        });
     }
 
     function toggleInvoicePreview() {
@@ -970,28 +1016,70 @@ function getStatusText($status)
     }
 
     function deleteOrder() {
-        if (!confirm('Ви впевнені, що хочете видалити це замовлення? Цю дію не можна скасувати.')) {
-            return;
-        }
+        Swal.fire({
+            title: 'Підтвердіть видалення',
+            text: 'Ви дійсно хочете видалити це замовлення? Цю дію не можна скасувати.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74a3b',
+            cancelButtonColor: '#858796',
+            confirmButtonText: 'Так, видалити',
+            cancelButtonText: 'Скасувати',
+            focusCancel: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Показуємо індикатор завантаження
+                Swal.fire({
+                    title: 'Видалення замовлення...',
+                    text: 'Будь ласка, зачекайте',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-        fetch('<?= url('admin/orders/delete') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `order_id=${orderId}&csrf_token=${csrfToken}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '<?= url('admin/orders') ?>';
-                } else {
-                    alert(data.message || 'Помилка при видаленні замовлення');
-                }
-            })
-            .catch(error => {
-                alert('Помилка при видаленні замовлення');
-            });
+                fetch('<?= url('admin/orders/delete') ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `order_id=${orderId}&csrf_token=${csrfToken}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Успіх!',
+                                text: 'Замовлення успішно видалено',
+                                confirmButtonColor: '#667eea',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = '<?= url('admin/orders') ?>';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Помилка!',
+                                text: data.message || 'Помилка при видаленні замовлення',
+                                confirmButtonColor: '#667eea'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Помилка!',
+                            text: 'Помилка при видаленні замовлення',
+                            confirmButtonColor: '#667eea'
+                        });
+                    });
+            }
+        });
     }
 
     // Smooth animations for invoice items
@@ -1023,5 +1111,11 @@ function getStatusText($status)
     observer.observe(document.getElementById('invoicePreview'), {
         attributes: true,
         attributeFilter: ['style']
+    });
+
+    // Збереження оригінального значення статусу при завантаженні сторінки
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusSelect = document.getElementById('statusSelect');
+        statusSelect.dataset.originalValue = statusSelect.value;
     });
 </script>

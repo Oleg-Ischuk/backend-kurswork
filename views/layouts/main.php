@@ -72,6 +72,7 @@
         text-align: center;
         white-space: nowrap;
         font-size: 0.85rem;
+        margin-right: 20px;
     }
 
     .navbar-nav .nav-link:hover,
@@ -176,7 +177,11 @@
         line-height: 1;
     }
 
-    /* User Menu */
+    /* User Menu and Dropdown Fixes */
+    .user-dropdown {
+        position: relative;
+    }
+
     .user-dropdown .nav-link {
         display: flex;
         align-items: center;
@@ -184,6 +189,64 @@
         gap: 0.5rem;
         min-height: 44px;
         min-width: 120px;
+    }
+
+    /* Dropdown Menu Fixes */
+    .dropdown-menu {
+        position: absolute;
+        z-index: 1050;
+        min-width: 200px;
+        max-width: 300px;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: white;
+
+        /* Вирівнювання по правому краю */
+        right: 0 !important;
+        left: auto !important;
+        top: 100%;
+        margin-top: 0.125rem;
+
+        /* Запобігання виходу за межі екрану */
+        transform: none;
+    }
+
+    .dropdown-menu .dropdown-item {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #2d3748;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+    .dropdown-menu .dropdown-item i {
+        width: 16px;
+        text-align: center;
+    }
+
+    /* Анімація для dropdown */
+    .dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Navbar Toggler */
@@ -417,10 +480,15 @@
             justify-content: center;
         }
 
-        /* Dropdown меню */
+        /* Dropdown меню для планшетів */
         .dropdown-menu {
-            width: 100%;
-            text-align: center;
+            position: absolute !important;
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
+            width: auto;
+            min-width: 200px;
+            max-width: 280px;
         }
 
         .footer-bottom {
@@ -530,10 +598,17 @@
             justify-content: center;
         }
 
-        /* Dropdown меню */
+        /* Dropdown меню для мобільних */
         .dropdown-menu {
-            width: 100%;
-            text-align: center;
+            position: fixed !important;
+            right: 10px !important;
+            left: auto !important;
+            top: auto !important;
+            transform: none !important;
+            width: calc(100vw - 20px);
+            max-width: 280px;
+            margin-top: 0.5rem;
+            z-index: 1060;
         }
     }
 
@@ -558,6 +633,19 @@
             width: 100%;
             justify-content: center;
         }
+
+        /* Dropdown для дуже маленьких екранів */
+        .dropdown-menu {
+            position: fixed !important;
+            right: 10px !important;
+            left: 10px !important;
+            top: auto !important;
+            transform: none !important;
+            width: calc(100vw - 20px);
+            max-width: none;
+            margin-top: 0.5rem;
+            z-index: 1060;
+        }
     }
 
     /* Додаткові стилі для забезпечення правильної роботи Bootstrap collapse */
@@ -573,6 +661,18 @@
 
     .navbar-collapse.collapse.show {
         display: block;
+    }
+
+    /* Виправлення для dropdown-toggle стрілки */
+    .navbar-nav .dropdown-toggle::after {
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+
+    /* Забезпечення що dropdown не перекриває інші елементи */
+    .dropdown-menu[data-bs-popper] {
+        right: 0;
+        left: auto;
     }
 </style>
 
@@ -647,10 +747,10 @@
 
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item dropdown user-dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user"></i><?= htmlspecialchars($_SESSION['user_name'] ?? 'Користувач') ?>
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="<?= url('orders') ?>"><i class="fas fa-box me-2"></i>Мої замовлення</a></li>
                                 <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
                                     <li>
@@ -744,6 +844,83 @@
 
     <!-- Custom JS -->
     <script src="<?= asset('assets/js/main.js') ?>"></script>
+
+    <!-- Dropdown Position Fix Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Функція для автоматичного позиціонування dropdown
+            function adjustDropdownPosition() {
+                const dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+
+                dropdownElements.forEach(function(element) {
+                    element.addEventListener('shown.bs.dropdown', function() {
+                        const menu = this.nextElementSibling;
+                        if (menu && menu.classList.contains('dropdown-menu')) {
+                            adjustSingleDropdown(menu, this);
+                        }
+                    });
+                });
+            }
+
+            function adjustSingleDropdown(menu, toggle) {
+                const rect = toggle.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // Перевірка для мобільних пристроїв
+                if (window.innerWidth <= 768) {
+                    // На мобільних пристроях позиціонуємо dropdown по центру або по правому краю
+                    if (viewportWidth < 400) {
+                        menu.style.left = '10px';
+                        menu.style.right = '10px';
+                        menu.style.width = 'calc(100vw - 20px)';
+                    } else {
+                        menu.style.right = '10px';
+                        menu.style.left = 'auto';
+                        menu.style.width = 'auto';
+                        menu.style.maxWidth = '280px';
+                    }
+                    return;
+                }
+
+                // Для десктопних версій
+                if (rect.right + menuRect.width > viewportWidth) {
+                    menu.style.right = '0';
+                    menu.style.left = 'auto';
+                } else {
+                    menu.style.left = '0';
+                    menu.style.right = 'auto';
+                }
+
+                // Перевірка чи виходить dropdown за нижню межу екрану
+                if (rect.bottom + menuRect.height > viewportHeight) {
+                    menu.style.top = 'auto';
+                    menu.style.bottom = '100%';
+                    menu.style.marginBottom = '0.125rem';
+                    menu.style.marginTop = '0';
+                } else {
+                    menu.style.top = '100%';
+                    menu.style.bottom = 'auto';
+                    menu.style.marginTop = '0.125rem';
+                    menu.style.marginBottom = '0';
+                }
+            }
+
+            // Ініціалізація
+            adjustDropdownPosition();
+
+            // Переналаштування при зміні розміру вікна
+            window.addEventListener('resize', function() {
+                setTimeout(adjustDropdownPosition, 100);
+            });
+
+            // Переналаштування при зміні орієнтації на мобільних пристроях
+            window.addEventListener('orientationchange', function() {
+                setTimeout(adjustDropdownPosition, 200);
+            });
+        });
+    </script>
 
     <!-- Initialize CSRF token for AJAX -->
     <script>

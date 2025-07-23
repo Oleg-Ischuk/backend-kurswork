@@ -182,6 +182,28 @@ try {
             $controller = new AdminProductController();
             $controller->store();
             break;
+        // Адмін - бренди
+        case $path === '/admin/brands':
+            $controller = new AdminBrandController();
+            $controller->index();
+            break;
+
+        case $path === '/admin/brands/store':
+            $controller = new AdminBrandController();
+            $controller->store();
+            break;
+
+        // Оновлення бренду
+        case $path === '/admin/brands/update' && $_SERVER['REQUEST_METHOD'] === 'POST':
+            $controller = new AdminBrandController();
+            $controller->update(null);
+            break;
+
+        // Видалення бренду
+        case $path === '/admin/brands/delete' && $_SERVER['REQUEST_METHOD'] === 'POST':
+            $controller = new AdminBrandController();
+            $controller->delete(null);
+            break;
 
         // Маршрут для видалення товарів
         case $path === '/admin/products/delete' && $_SERVER['REQUEST_METHOD'] === 'POST':

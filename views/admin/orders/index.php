@@ -326,19 +326,32 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    // Status change handler
+    // Status change handler with SweetAlert confirmation
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('status-select')) {
             const orderId = e.target.dataset.orderId;
             const newStatus = e.target.value;
 
-            if (confirm('Змінити статус замовлення?')) {
-                updateOrderStatus(orderId, newStatus);
-            } else {
-                // Revert selection
-                e.target.value = e.target.dataset.originalValue;
-            }
+            Swal.fire({
+                title: 'Підтвердіть зміну',
+                text: 'Змінити статус замовлення?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Так, змінити',
+                cancelButtonText: 'Скасувати'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateOrderStatus(orderId, newStatus);
+                } else {
+                    // Revert selection
+                    e.target.value = e.target.dataset.originalValue;
+                }
+            });
         }
     });
 
@@ -363,13 +376,25 @@
                     select.dataset.originalValue = status;
 
                     // Show success message
-                    showNotification('success', 'Статус замовлення оновлено');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Успіх!',
+                        text: 'Статус замовлення оновлено',
+                        confirmButtonColor: '#667eea',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
                     // Revert selection
                     const select = document.querySelector(`[data-order-id="${orderId}"]`);
                     select.value = select.dataset.originalValue;
 
-                    showNotification('error', data.message || 'Помилка при оновленні статусу');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Помилка!',
+                        text: data.message || 'Помилка при оновленні статусу',
+                        confirmButtonColor: '#667eea'
+                    });
                 }
             })
             .catch(error => {
@@ -377,36 +402,84 @@
                 const select = document.querySelector(`[data-order-id="${orderId}"]`);
                 select.value = select.dataset.originalValue;
 
-                showNotification('error', 'Помилка при оновленні статусу');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Помилка!',
+                    text: 'Помилка при оновленні статусу',
+                    confirmButtonColor: '#667eea'
+                });
             });
     }
 
     function deleteOrder(orderId) {
-        if (!confirm('Ви впевнені, що хочете видалити це замовлення?')) {
-            return;
-        }
+        Swal.fire({
+            title: 'Підтвердіть видалення',
+            text: 'Ви дійсно хочете видалити це замовлення?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74a3b',
+            cancelButtonColor: '#858796',
+            confirmButtonText: 'Так, видалити',
+            cancelButtonText: 'Скасувати'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-        fetch('<?= url('admin/orders/delete') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `order_id=${orderId}&csrf_token=<?= $csrf_token ?>`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'Помилка при видаленні замовлення');
-                }
-            })
-            .catch(error => {
-                alert('Помилка при видаленні замовлення');
-            });
+            fetch('<?= url('admin/orders/delete') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `order_id=${orderId}&csrf_token=<?= $csrf_token ?>`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Успіх!',
+                            text: 'Замовлення успішно видалено',
+                            confirmButtonColor: '#667eea'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Помилка!',
+                            text: data.message || 'Помилка при видаленні замовлення',
+                            confirmButtonColor: '#667eea'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Помилка!',
+                        text: 'Помилка при видаленні замовлення',
+                        confirmButtonColor: '#667eea'
+                    });
+                });
+        });
     }
 
     function showNotification(type, message) {
-        console.log(`${type}: ${message}`);
+        // Для сумісності, але краще використовувати SweetAlert
+        if (type === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Успіх!',
+                text: message,
+                confirmButtonColor: '#667eea',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка!',
+                text: message,
+                confirmButtonColor: '#667eea'
+            });
+        }
     }
 </script>
